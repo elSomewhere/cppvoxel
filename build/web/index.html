@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU Triangle Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #222;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            margin-top: 20px;
+            border: 1px solid #444;
+            width: 800px;
+            height: 600px;
+            background-color: #000;
+        }
+        #console {
+            margin-top: 20px;
+            width: 800px;
+            height: 200px;
+            overflow-y: auto;
+            background-color: #111;
+            color: #eee;
+            border: 1px solid #444;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .log { color: #8f8; }
+        .error { color: #f88; }
+        .warn { color: #ff8; }
+    </style>
+</head>
+<body>
+    <h1>WebGPU Triangle Example</h1>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div id="console"></div>
+
+    <script>
+        // Console logging functions that output to our console div
+        const consoleElem = document.getElementById('console');
+        
+        // Override console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+            const logLine = document.createElement('div');
+            logLine.className = 'log';
+            logLine.textContent = `[log] ${msg}`;
+            consoleElem.appendChild(logLine);
+            consoleElem.scrollTop = consoleElem.scrollHeight;
+        };
+        
+        // Override console.error
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+            const logLine = document.createElement('div');
+            logLine.className = 'error';
+            logLine.textContent = `[ERROR] ${msg}`;
+            consoleElem.appendChild(logLine);
+            consoleElem.scrollTop = consoleElem.scrollHeight;
+        };
+        
+        // Override console.warn
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+            const logLine = document.createElement('div');
+            logLine.className = 'warn';
+            logLine.textContent = `[WARN] ${msg}`;
+            consoleElem.appendChild(logLine);
+            consoleElem.scrollTop = consoleElem.scrollHeight;
+        };
+        
+        // Add a global error handler
+        window.addEventListener('error', function(event) {
+            console.error('JavaScript Error:', event.message, 'at', event.filename, 'line', event.lineno);
+        });
+        
+        // Check WebGPU support
+        async function checkWebGPU() {
+            if (!navigator.gpu) {
+                console.error('WebGPU is not supported in this browser');
+                return false;
+            }
+            
+            console.log('WebGPU is supported!');
+            
+            try {
+                const adapter = await navigator.gpu.requestAdapter();
+                if (!adapter) {
+                    console.error('No appropriate WebGPU adapter found');
+                    return false;
+                }
+                
+                // Just log we got an adapter without using requestAdapterInfo
+                console.log('WebGPU Adapter found');
+                console.log('WebGPU is fully supported and ready to use');
+                return true;
+            } catch (error) {
+                console.error('WebGPU initialization error:', error.message);
+                return false;
+            }
+        }
+        
+        // Set up module configuration
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            print: function(text) {
+                console.log(text);
+            },
+            printErr: function(text) {
+                console.error(text);
+            },
+            onRuntimeInitialized: function() {
+                console.log('Emscripten runtime initialized');
+            }
+        };
+        
+        // Check WebGPU before loading the wasm
+        checkWebGPU().then(supported => {
+            if (!supported) {
+                console.error('WebGPU not fully supported. The triangle may not render.');
+            } else {
+                console.log('Loading WebGPU application...');
+            }
+        });
+    </script>
+    <script async src="voxel_engine.js"></script>
+</body>
+</html>

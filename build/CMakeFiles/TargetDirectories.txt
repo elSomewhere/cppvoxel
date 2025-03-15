@@ -1,0 +1,3 @@
+/Users/estebanlanter/Documents/JOB2023/VoxelCPP/build/CMakeFiles/voxel_engine.dir
+/Users/estebanlanter/Documents/JOB2023/VoxelCPP/build/CMakeFiles/edit_cache.dir
+/Users/estebanlanter/Documents/JOB2023/VoxelCPP/build/CMakeFiles/rebuild_cache.dir

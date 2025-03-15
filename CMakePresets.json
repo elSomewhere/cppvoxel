@@ -1,0 +1,37 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 14
+    },
+    "configurePresets": [
+        {
+            "name": "emscripten-debug",
+            "displayName": "Emscripten (Debug)",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "/Users/estebanlanter/CLionProjects/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            }
+        },
+        {
+            "name": "emscripten-release",
+            "displayName": "Emscripten (Release)",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_TOOLCHAIN_FILE": "/Users/estebanlanter/CLionProjects/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "emscripten-debug",
+            "configurePreset": "emscripten-debug"
+        },
+        {
+            "name": "emscripten-release",
+            "configurePreset": "emscripten-release"
+        }
+    ]
+}

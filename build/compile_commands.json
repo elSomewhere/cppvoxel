@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/estebanlanter/Documents/JOB2023/VoxelCPP/build",
+  "command": "/usr/bin/clang++  -isystem /Users/estebanlanter/CLionProjects/emsdk/upstream/emscripten/cache/sysroot/include -g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk -mmacosx-version-min=14.0 -o CMakeFiles/voxel_engine.dir/main.cpp.o -c /Users/estebanlanter/Documents/JOB2023/VoxelCPP/main.cpp",
+  "file": "/Users/estebanlanter/Documents/JOB2023/VoxelCPP/main.cpp",
+  "output": "CMakeFiles/voxel_engine.dir/main.cpp.o"
+}
+]
