@@ -1,25 +1,61 @@
 #!/bin/bash
-# Build script for WebGPU triangle example using Emscripten
+# WebGPU Application Build and Run Script
+# Usage: ./build-and-run.sh [PORT]
+# If PORT is not specified, defaults to 8080
+
+# Default port
+PORT=${1:-8080}
+
+# Project name
+PROJECT_NAME="WebGPU Triangle"
+
+# Set colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Function to print colored status messages
+print_status() {
+    echo -e "${BLUE}===> $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}===> $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}===> ERROR: $1${NC}"
+}
 
 # Check if emscripten is available
 if ! command -v emcc &> /dev/null; then
-    echo "Emscripten compiler (emcc) not found. Please make sure Emscripten is installed and activated."
+    print_error "Emscripten compiler (emcc) not found. Please make sure Emscripten is installed and activated."
     exit 1
 fi
 
-echo "===== Building Minimal Emscripten Project ====="
+print_status "Building $PROJECT_NAME..."
 
 # Create build directory if it doesn't exist
-mkdir -p build/web
+BUILD_DIR="build/web"
+mkdir -p $BUILD_DIR
+
+# Clean up unnecessary files
+print_status "Cleaning up unnecessary files..."
+rm -rf build/web/index.html.bak 2>/dev/null
+rm -rf emscripten-build 2>/dev/null
+# Keep only essential files
+find . -type f -name "*.o" -delete 2>/dev/null
+find . -type f -name "*.tmp" -delete 2>/dev/null
 
 # Kill any running server processes to prevent port conflicts
-echo "Checking for existing server processes..."
+print_status "Checking for existing server processes..."
 pkill -f "python.*server.py" || true
 
 # Compile the application with WebGPU support
-echo "Compiling project with emcc..."
+print_status "Compiling project with emcc..."
 emcc -std=c++17 -O1 main.cpp \
-     -o build/web/voxel_engine.js \
+     -o $BUILD_DIR/voxel_engine.js \
      -s USE_WEBGPU=1 \
      -s WASM=1 \
      -s ALLOW_MEMORY_GROWTH=1 \
@@ -29,8 +65,16 @@ emcc -std=c++17 -O1 main.cpp \
      -s "ASYNCIFY_IMPORTS=['OnDeviceCreated','OnAdapterReady']" \
      --shell-file index.html
 
+if [ $? -ne 0 ]; then
+    print_error "Compilation failed!"
+    exit 1
+fi
+
+print_success "Compilation successful!"
+
 # Create a simple server script to serve the WebGPU application
-cat > build/web/server.py << 'EOL'
+print_status "Creating server script with port $PORT..."
+cat > $BUILD_DIR/server.py << EOL
 #!/usr/bin/env python3
 import http.server
 import socketserver
@@ -38,7 +82,7 @@ import os
 import sys
 from pathlib import Path
 
-PORT = 8080
+PORT = $PORT
 DIRECTORY = Path(__file__).parent.absolute()
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -71,15 +115,11 @@ if __name__ == "__main__":
 EOL
 
 # Make the server script executable
-chmod +x build/web/server.py
+chmod +x $BUILD_DIR/server.py
 
-echo "===== Build Complete ====="
-echo "The build output is located in the build/web directory"
-echo "To run the demo, navigate to the build/web directory and run:"
-echo "   python3 server.py"
-echo "Then open http://localhost:8080 in your browser"
+print_success "Build complete! The output is in the $BUILD_DIR directory."
+print_status "Starting server on port $PORT..."
 
-# Start the server automatically
-echo "Starting server..."
-cd build/web && python3 server.py &
-echo "Server starting in background. Open http://localhost:8080 in your browser" 
+# Start the server
+cd $BUILD_DIR
+python3 server.py 
