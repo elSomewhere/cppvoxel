@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU Triangle Example</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        canvas {
+            width: 800px;
+            height: 600px;
+            display: block;
+            margin: 20px auto;
+            background-color: #000;
+        }
+        .controls {
+            margin: 0 auto;
+            width: 800px;
+        }
+        #log-container {
+            width: 800px;
+            height: 200px;
+            margin: 0 auto;
+            background-color: #111;
+            border: 1px solid #444;
+            overflow-y: auto;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <h3>WebGPU Triangle Demo</h3>
+        <div>Log Messages:</div>
+        <div id="log-container"></div>
+    </div>
+
+    <script>
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: (function() {
+                var logElement = document.getElementById('log-container');
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log("[log] " + text);
+                    if (logElement) {
+                        logElement.textContent += "[log] " + text + "\n";
+                        logElement.scrollTop = logElement.scrollHeight;
+                    }
+                };
+            })(),
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                return canvas;
+            })(),
+            setStatus: function(text) {
+                console.log("Status: " + text);
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+
+        // Check for WebGPU support
+        (async function() {
+            try {
+                if (navigator.gpu) {
+                    console.log("[log] WebGPU is supported!");
+                    const adapter = await navigator.gpu.requestAdapter();
+                    if (!adapter) {
+                        throw new Error("No appropriate GPUAdapter found.");
+                    }
+                    console.log("[log] WebGPU Adapter found");
+                    
+                    // Success - WebGPU is fully supported
+                    console.log("[log] WebGPU is fully supported and ready to use");
+                } else {
+                    throw new Error("WebGPU is not supported in this browser.");
+                }
+            } catch (e) {
+                console.error("[ERROR] WebGPU check failed:", e);
+                document.body.innerHTML = `
+                    <div style="color: red; margin: 20px;">
+                        <h2>WebGPU Not Available</h2>
+                        <p>${e.message}</p>
+                        <p>Please use a browser that supports WebGPU, such as Chrome 113+</p>
+                    </div>
+                `;
+            }
+        })();
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>
